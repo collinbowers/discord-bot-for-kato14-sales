@@ -1,0 +1,30 @@
+{
+  "name": "discord-bot-for-kato14-sales",
+  "version": "1.0.0",
+  "description": "Discord bot combined with a node.js webscraped for gathering recent sales of Katowice 2014 stickers.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/scrape.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/collinbowers/discord-bot-for-kato14-sales.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/collinbowers/discord-bot-for-kato14-sales/issues"
+  },
+  "homepage": "https://github.com/collinbowers/discord-bot-for-kato14-sales#readme",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "cheerio": "^1.0.0-rc.3",
+    "cron": "^1.8.2",
+    "discord.js": "^12.3.1",
+    "dotenv": "^8.2.0",
+    "mongoose": "^5.10.3",
+    "node-cache": "^5.1.2",
+    "puppeteer": "^5.2.1"
+  }
+}
