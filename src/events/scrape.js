@@ -1,16 +1,13 @@
 const cheerio = require ('cheerio');
 const puppeteer = require ('puppeteer');
 const mongoose = require('mongoose');
-const Discord = require('discord.js');
 require('dotenv').config();
-const CronJob = require('cron').CronJob;
 const Katos = require('../models/katos.js');
 
-// database initalization
 const db = require('../utils/mongoose.js');
 db.init();
 
-const page_url = process.env.SCRAPE_URL;
+const page_url = process.env.SALES_URL;
 
 async function getSales() {
     puppeteer.launch({ headless: true })
@@ -31,38 +28,44 @@ async function getSales() {
                         sale.date = $element.find('td').eq(3).text();
                         sale.marketplace = $element.find('td').eq(4).text();
                         if ($element.find('td').eq(0).hasClass('table-normal')) {
-                            sale.rarity = 'Non Holo';
+                            if (sale.name.includes('Sticker')){
+                                sale.rarity = 'Non Holo';
+                            } else {
+                                sale.rarity = 'Capsule';
+                            }
+                        } else if (sale.name.includes('Foil')){
+                            sale.rarity = 'Foil';
                         } else {
                             sale.rarity = 'Holo';
                         }
                         sales.push(sale);
-                        return (i !== 9);
+                        return (i !== 4);
                     });
+                    console.log(sales);
                     sales.forEach(element => {
-                        Katos.countDocuments({
+                        var ifExists = Katos.exists({
                             stickerName: element.name,
                             stickerPrice: element.price, 
                             soldDate: element.date,
                             stickerMarketplace: element.marketplace,
-                            stickerRarity: element.rarity
-                        }, function (err, count){
-                            if (count > 0) {
-                                continue;
-                            } else {
-                                kato = new Katos({
-                                    _id: mongoose.Types.ObjectId(),
-                                    stickerName: element.name,
-                                    stickerPrice: element.price, 
-                                    soldDate: element.date,
-                                    stickerMarketplace: element.marketplace,
-                                    stickerRarity: element.rarity,
-                                });
-                                kato.save()
-                                    .then (result => console.log(result))
-                                    .catch (err => console.error(err));
-                                console.log('New Kato Sale! :D');      
-                            }
+                            stickerRarity: element.rarity,
                         });
+                        if (ifExists == true) {
+                            console.log('Not a new sale');
+                        } else {
+                            console.log('New sale poggers');
+                            kato = new Katos({
+                                _id: mongoose.Types.ObjectId(),
+                                stickerName: element.name,
+                                stickerPrice: element.price, 
+                                soldDate: element.date,
+                                stickerMarketplace: element.marketplace,
+                                stickerRarity: element.rarity,
+                            });
+                            kato.save()
+                                .then (result => console.log(result))
+                                .catch (err => console.error(err));
+                        }
                     })
                 });
         })

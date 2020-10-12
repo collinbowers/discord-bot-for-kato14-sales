@@ -4,7 +4,7 @@
   "description": "Discord bot combined with a node.js webscraped for gathering recent sales of Katowice 2014 stickers.",
   "main": "index.js",
   "scripts": {
-    "start": "node src/scrape.js"
+    "start": "node src/index.js"
   },
   "repository": {
     "type": "git",

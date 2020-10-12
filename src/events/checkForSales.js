@@ -1,35 +1,78 @@
 const mongoose = require('mongoose');
 const Discord = require('discord.js');
 require('dotenv').config();
-const CronJob = require('cron').CronJob;
 const Katos = require('../models/katos.js');
-
-const guildID = process.env.GUILD_ID;
-const channelID = process.env.CHANNEL_ID;
 
 // database initalization
 const db = require('../utils/mongoose.js');
 db.init();
 
-// i want to check new entries in last hour, if there are new entries
-// send a message to discord
+const now = Date.now();
+const halfHourAgo = now - 1800;
 
-const now = Date.now(); // unix timestamp for when it runs
-const hourAgo = now - 3599; // unix timestamp for 59:99 ago
-
-// check created_at for last hour
 async function checkLastHour() {
-    Katos.find({
-        created_at: {$gte : hourAgo},
-        created_at: {$lte : now},
-    }, function(err, docs) {
-        console.log(docs);
-        if (docs.length < 1 || docs == undefined) {
+    try {
+        var messages = [];
+        var messageContext;
+        data = await Katos.find({
+            created_at : {$lte : now},
+            created_at : {$gte : halfHourAgo},
+        }).exec();
+        console.log(data);
+        if (data.length < 1 || data == undefined) {
             console.log('no new sales');
+        } else if (data.length == 1) {
+            if (data[0].stickerRarity == ('Foil') || data[0].stickerRarity == ('Holo')) {
+                splitTitle = data[0].stickerName.split('| ')[1];
+                trimPrice = data[0].stickerPrice.split(' ').join('');
+                messageContext = splitTitle + 'sold for ' + trimPrice 
+                + ' on ' + data[0].stickerMarketplace;
+            } else if (data[0].stickerRarity == ('Non Holo')) {
+                splitTitle = data[0].stickerName.split('| ')[1];
+                trimPrice = data[0].stickerPrice.split(' ').join('');
+                messageContext = splitTitle + '(' + data[0].stickerRarity + ') '
+                + 'sold for ' + trimPrice + ' on ' + data[0].stickerMarketplace;
+            } else {
+                splitTitle = data[0].stickerName;
+                trimPrice = data[0].stickerPrice.split(' ').join('');
+                messageContext = splitTitle + '(' + data[0].stickerRarity + ') '
+                + 'sold for ' + trimPrice + ' on ' + data[0].stickerMarketplace;
+            }
+            await handleMessage(messageContext);
         } else {
-            // send discord message
+            for (i of data) {
+                if (i.stickerRarity == ('Foil') || i.stickerRarity == ('Holo')) {
+                    splitTitle = i.stickerName.split('| ')[1];
+                    trimPrice = i.stickerPrice.split(' ').join('');
+                    messageContext = splitTitle + 'sold for ' + trimPrice 
+                    + ' on ' + i.stickerMarketplace;
+                } else if (i.stickerRarity == ('Non Holo')) {
+                    splitTitle = i.stickerName.split('| ')[1];
+                    trimPrice = i.stickerPrice.split(' ').join('');
+                    messageContext = splitTitle + '(' + i.stickerRarity + ') '
+                    + 'sold for ' + trimPrice + ' on ' + i.stickerMarketplace;
+                } else {
+                    splitTitle = i.stickerName;
+                    trimPrice = i.stickerPrice.split(' ').join('');
+                    messageContext = splitTitle + '(' + i.stickerRarity + ') '
+                    + 'sold for ' + trimPrice + ' on ' + i.stickerMarketplace;
+                }
+                await handleMessage(messageContext);
+            }
         }
-    });
+        return messages;
+        async function handleMessage(msg) {
+            var message = {};
+            try {
+                message.context = msg;
+                messages.push(message);
+            } catch(error) {
+                console.log(error);
+            }
+        }
+    } catch(error) {
+        console.log(error);
+    }
 }
-checkLastHour();
 
+module.exports = { checkLastHour }

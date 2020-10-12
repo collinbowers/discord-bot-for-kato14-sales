@@ -1,27 +1,32 @@
 const Discord = require('discord.js');
-const fs = require('fs');
 require('dotenv').config();
-const scrape = require('./events/scrape');
 const commandHandler = require('./commands');
+const scrape = require('./events/scrape');
+const checkLastHour = require('./events/checkForSales')
 
 const client = new Discord.Client();
+const channelID = process.env.CHANNEL_ID;
+const roleID = process.env.ROLE_ID;
 
 client.once('ready', () => {
 	console.log('🤖 Ready!');
-	scrape.getSales(); 
+	client.user.setActivity('Yoinking BUFF data 🏸');
 });
 
 client.on('message', commandHandler);
 
-fs.readdir('./events/', (err, files) => {
-	if (err) return console.error;
-	files.forEach(file => {
-		if (!file.endsWith('.js')) return;
-		const evt = require('./events/${file}');
-		let evtName = file.split('.')[0];
-		console.log(`Loaded event '${evtName}'`);
-		client.on(evtName, evt.bind(null, client));
-	});
+client.setInterval(async function() {
+	await scrape.getSales();
+	client.channels.cache.get(channelID).send('scraped cantry.dev');
+	const sale = await checkLastHour.checkLastHour();
+		sale.forEach(element => {
+			client.channels.cache.get(channelID).send('<@&' + roleID +'> '
+			+ element.context);
+		});
+}, 1799999);
+
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
 });
 
 client.login(process.env.BOT_TOKEN);
