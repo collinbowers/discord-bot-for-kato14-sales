@@ -8,7 +8,7 @@ const db = require('../utils/mongoose.js');
 db.init();
 
 const now = Date.now();
-const halfHourAgo = now - 1800;
+const halfHourAgo = now - 5;
 
 async function checkLastHour() {
     try {

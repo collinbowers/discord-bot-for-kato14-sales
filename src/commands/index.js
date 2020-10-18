@@ -1,7 +1,7 @@
 const info = require('./info');
 const options = require('./options');
 const allPrices = require('./allKatoPrices');
-const monthlyhigh = require('./highestAllMonth');
+const highest = require('./highestSale');
 const last7days = require('./last7Days');
 const dev = require('./dev')
 
@@ -12,7 +12,7 @@ const commands = {
     info,
     options,
     allPrices,
-    monthlyhigh,
+    highest,
     last7days,
     dev,
 };

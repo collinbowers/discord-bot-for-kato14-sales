@@ -7,7 +7,7 @@ const db = require('../utils/mongoose.js');
 db.init();
 
 const now =  new Date();
-const oneMonthAgo = now.setDate(now.getDate() - 30);
+const oneMonthAgo = now.setDate(now.getDate() - 365);
 
 var message;
 async function highestAllMonth() {
